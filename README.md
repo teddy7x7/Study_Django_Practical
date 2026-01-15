@@ -4,18 +4,13 @@ It serves as a personal learning record and a reference for future Django develo
 
 ## 📚 Contents
 * Lesson summaries and key concepts
-
 * Code snippets and practice exercises
-
 * Mini-projects built during the course
-
 * Reflections and lessons learned
 
 ## 🎯 Purpose
 The goal of this repository is to:
 
 * Reinforce my understanding of Django fundamentals
-
 * Build a portfolio of Django projects
-
 * Provide a resource I can revisit when working on real-world applications
