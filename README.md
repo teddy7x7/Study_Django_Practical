@@ -14,3 +14,11 @@ The goal of this repository is to:
 * Reinforce my understanding of Django fundamentals
 * Build a portfolio of Django projects
 * Provide a resource I can revisit when working on real-world applications
+
+## How to use the repo
+Each project is managed independently using uv.
+
+Example:
+cd project1
+uv sync
+uv run python main.py

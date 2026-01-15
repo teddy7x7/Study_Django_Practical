@@ -1,0 +1,22 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ===== uv / virtual environments =====
+.venv/
+__pypackages__/
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ===== Logs / cache =====
+*.log
+.cache/
