@@ -8,6 +8,25 @@ __pycache__/
 .venv/
 __pypackages__/
 
+# ===== Django =====
+*.sqlite3
+db.sqlite3
+local_settings.py
+.env
+
+# Django media & static collected files
+media/
+staticfiles/
+
+# Django cache & sessions
+*.cache
+django_cache/
+
+# ===== Test / coverage =====
+.pytest_cache/
+.coverage
+htmlcov/
+
 # ===== Jupyter =====
 .ipynb_checkpoints/
 
@@ -20,3 +39,6 @@ Thumbs.db
 # ===== Logs / cache =====
 *.log
 .cache/
+
+# ===== Temporary files =====
+temp/
