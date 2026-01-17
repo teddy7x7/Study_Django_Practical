@@ -18,7 +18,7 @@ The goal of this repository is to:
 ## How to use the repo
 Each project is managed independently using uv.
 
-Example:
-cd project1
-uv sync
-uv run python main.py
+Example:  
+cd project1  
+uv sync  
+uv run python main.py  
