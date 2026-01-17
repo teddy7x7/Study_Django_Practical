@@ -19,6 +19,9 @@ The goal of this repository is to:
 Each project is managed independently using uv.
 
 Example:  
-cd project1  
-uv sync  
-uv run python main.py  
+
+```bash
+cd project1              # switch to the project folder
+uv sync                  # install and synchronize dependencies
+uv run python main.py    # run the main program
+```
