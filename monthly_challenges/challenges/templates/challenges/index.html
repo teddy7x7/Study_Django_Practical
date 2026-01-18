@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Challenges</title>
+</head>
+<body>
+    <h1>Monthly Challenges</h1>
+    <ul>
+        {% for month in months %}
+            {% comment %} Inside the url tag. month=month, the first "month" is the argument of the dynamic segement of the path function in the urls.py. The second month is the for loop tag's month {% endcomment %}
+            <li><a href="{% url 'month-challenge' month=month %}">{{ month|title }}</a></li>   
+        {% endfor %}
+    </ul>
+</body>
+</html>

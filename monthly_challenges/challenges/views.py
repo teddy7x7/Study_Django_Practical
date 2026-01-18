@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.urls import reverse
+from django.template.loader import render_to_string
 # Create your views here.
 
 monthly_challenges = {
@@ -15,22 +16,27 @@ monthly_challenges = {
     "september": "complete fourth unreal engine tutorial",
     "october": "complete first animation tutorial",
     "november": "complete second animation tutorial",
-    "december": "Start my first game development",
+    "december": None,
 }
 
 
 def index(request):
-    list_items = ""
     months = list(monthly_challenges.keys())
     
-    for month in months:
-        month_path = reverse("month-challenge", args=[month])
-        capitalized_month = month.capitalize()
-        list_items += f"<li><a href = \"{month_path}\">{capitalized_month}</a></li>"
+    ## implementation 1, naive way to generate html unordered list
+    # list_items = ""
+    # for month in months:
+    #     month_path = reverse("month-challenge", args=[month])
+    #     capitalized_month = month.capitalize()
+    #     list_items += f"<li><a href = \"{month_path}\">{capitalized_month}</a></li>"
 
-    response_data = f"<ul>{list_items}</ul>"
-    return HttpResponse(response_data)
+    # response_data = f"<ul>{list_items}</ul>"
+    # return HttpResponse(response_data)
 
+    ## implementation 2, use tag in the index.html template file to generate html unordered list
+    return render(request, "challenges/index.html", {
+        "months": months
+    })
 
 def monthly_challenge_by_number(request, month: int):
     try:
@@ -59,10 +65,22 @@ def monthly_challenge(request, month):
     # else:
     #     return HttpResponseNotFound("This month is not supported!")
 
-    # implementation 3
+    # # implementation 3
     try:
         challenge_text = monthly_challenges[month]
-        response_data = f"<h1>{challenge_text}</h1>"
-        return HttpResponse(response_data)
+        # response_data = f"<h1>{challenge_text}</h1>"
+        
+        # # original two line of code
+        # # To prevent names of files from distinct apps clash, thus the best practice is to create a folder with the same name of the app under the template folder which contains the html
+        # response_data = render_to_string("challenges/challenge.html")
+        # return HttpResponse(response_data)
+    
+        # shortcut of upward two line of code
+        return render(request, "challenges/challenge.html", {
+            "month": month,
+            "challenge_text": challenge_text
+        })
+
     except KeyError:
         return HttpResponseNotFound("<h1>This month is not supported!</h1>")
+    

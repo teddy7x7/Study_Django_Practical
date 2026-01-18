@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The double curly braces is django templating language's place holder, offically called interpolation, which can receive variable from render function call in the view function-->
+    <!-- the pipe symbol is for "filter" function supported by django, to do some logic to the interpolation value before output it -->
+    <title>{{ month | title }} Challenge</title>
+</head>
+
+<body>
+    <h1>{{ month | title }} Challenge</h1>
+    {% if challenge_text %}
+        <h2>{{ challenge_text }}</h2>
+    {% else %}
+        <p>There is no challenge for this month yet :D</p>
+    {% endif %}
+</body>
+
+</html>
