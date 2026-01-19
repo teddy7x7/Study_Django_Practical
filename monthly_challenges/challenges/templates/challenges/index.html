@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% load static %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static "challenges/challenges.css" %}">
+    <link rel="stylesheet" href="{% static "challenges/includes/header.css" %}">
+{% endblock %}
+
+{% comment %} Be aware of that the extends coming with a string type of path of the html, and if we register the path in the PATH DIR in the settings.py, then we can just write the file name. {% endcomment %}
+
+{% comment %} Before using template inheritance {% endcomment %}
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,10 +19,25 @@
 <body>
     <h1>Monthly Challenges</h1>
     <ul>
+        <!-- Inside the url tag. month=month, the first "month" is the argument of the dynamic segement of the path function in the urls.py. The second month is the for loop tag's month -->
         {% for month in months %}
-            {% comment %} Inside the url tag. month=month, the first "month" is the argument of the dynamic segement of the path function in the urls.py. The second month is the for loop tag's month {% endcomment %}
             <li><a href="{% url 'month-challenge' month=month %}">{{ month|title }}</a></li>   
         {% endfor %}
     </ul>
 </body>
-</html>
+</html> {% endcomment %}
+
+
+{% block page_title %}
+    All Challenges
+{% endblock %}
+
+{% block content %}
+    {% include "challenges/includes/header.html" %}
+    
+    <ul>    
+        {% for month in months %}
+            <li><a href="{% url 'month-challenge' month=month %}">{{ month|title }}</a></li>   
+        {% endfor %}
+    </ul>    
+{% endblock %}

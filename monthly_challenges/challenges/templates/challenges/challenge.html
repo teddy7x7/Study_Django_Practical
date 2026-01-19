@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% load static %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static "challenges/challenge.css" %}">
+    <link rel="stylesheet" href="{% static "challenges/includes/header.css" %}">
+{% endblock %}
+
+{% comment %} Be aware of that the extends coming with a string type of path of the html, and if we register the path in the PATH DIR in the settings.py, then we can just write the file name. {% endcomment %}
+
+{% comment %} Before using template inheritance {% endcomment %}
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -18,4 +29,21 @@
     {% endif %}
 </body>
 
-</html>
+</html> {% endcomment %}
+
+{% block page_title %}
+    {{ month | title }} Challenge
+{% endblock %}
+
+{% comment %} For the absolute path, the root folder is the template folder. {% endcomment %}
+{% comment %} Or we can use relative path "./includes/header.html" {% endcomment %}
+
+{% block content %}
+    {% include "challenges/includes/header.html" %}
+    <h1>{{ month | title }} Challenge</h1>
+    {% if challenge_text %}
+        <h2>{{ challenge_text }}</h2>
+    {% else %}
+        <p class="fallback">There is no challenge for this month yet :D</p>
+    {% endif %}
+{% endblock %}

@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "django.contrib.staticfiles", # this helps django to handle static files
 ]
 
 MIDDLEWARE = [
@@ -57,6 +57,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             # globally used template's directory can be registered here
+            BASE_DIR / "templates"
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -117,7 +118,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+# Related to the deploy phase
+# This setting tells django under which url it shoule serve those static
 STATIC_URL = "static/"
+
+# specify folders that should be considered when django collects and load static files when it is going to move them to some static folder on the server, it created, in the deployment phase.
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

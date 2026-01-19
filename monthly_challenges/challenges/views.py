@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.template.loader import render_to_string
 # Create your views here.
@@ -48,7 +48,9 @@ def monthly_challenge_by_number(request, month: int):
         redirect_path = reverse("month-challenge", args=[redirect_month])
         return HttpResponseRedirect(redirect_path)
     except IndexError:
-        return HttpResponseNotFound("This month is not supported!")
+        # return HttpResponseNotFound("This month is not supported!")
+        response_data = render_to_string("404.html")
+        return HttpResponseNotFound(response_data)
 
 
 def monthly_challenge(request, month):
@@ -82,5 +84,11 @@ def monthly_challenge(request, month):
         })
 
     except KeyError:
-        return HttpResponseNotFound("<h1>This month is not supported!</h1>")
+        ## implementation 1
+        # response_data = render_to_string("404.html")
+        # return HttpResponseNotFound(response_data)
+        
+        ## implementation 2
+        # Django would find the 404.html automatically and set DEBUG = False in the settings.py, we'll get that template page returned.
+        raise Http404() 
     
