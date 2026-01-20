@@ -1,0 +1,19 @@
+{% load static %}
+
+{% block css_files %}
+    {% comment %} <link rel="stylesheet" href="{% static 'blog/css/post.css' %}" /> {% endcomment %}
+{% endblock %}
+
+<li>
+    <article class="post">
+        <a href="">
+            <img src="{% static 'blog/images/mountains.jpg' %}" alt="Mountain Hiking" />
+            <div class="post__content">
+                <h3>Mountain Hiking</h3>
+                <p>
+                    Study new things just like climbing a mountain. Step by step, we reach new heights and gain new perspectives. Finally, we can enjoy the breathtaking view from the summit.
+                </p>
+            </div>
+        </a>
+    </article>
+</li>

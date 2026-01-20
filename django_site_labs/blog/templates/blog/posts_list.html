@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment "" %} This is modified from the all-post.html file {% endcomment %}
+
+{% block title %}
+    All Posts - Teddy's Dev Blog
+{% endblock %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'blog/css/post.css' %}" />
+    <link rel="stylesheet" href="{% static 'blog/css/posts_list.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <section id="all-posts">
+        <h2>My Collected Posts</h2>
+        <ul>
+            {% include "blog/includes/post.html" %}
+            {% include "blog/includes/post.html" %}
+            {% include "blog/includes/post.html" %}
+            {% include "blog/includes/post.html" %}
+            {% include "blog/includes/post.html" %}
+            {% include "blog/includes/post.html" %}
+        </ul>
+
+    </section>
+{% endblock %}

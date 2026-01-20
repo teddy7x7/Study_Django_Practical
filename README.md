@@ -23,5 +23,5 @@ Example:
 ```bash
 cd project1              # switch to the project folder
 uv sync                  # install and synchronize dependencies
-uv run python main.py    # run the main program
+uv run python manage.py runserver    # run the django local server
 ```

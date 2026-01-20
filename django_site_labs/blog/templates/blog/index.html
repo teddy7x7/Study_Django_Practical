@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Teddy's Dev Blog
+{% endblock %}
+
+{% block css_files %}
+    <link rel="stylesheet" href="{% static 'blog/css/post.css' %}" />
+    <link rel="stylesheet" href="{% static 'blog/css/index.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <section id="welcome">
+        <header>
+            <img src="{% static 'blog/images/self.png' %}" alt="Dev Blog Logo" />
+            <h2>Teddy's Dev Blog</h2>
+        </header>
+        <p>Hi! I'm Teddy, a software developer passionate about coding and technology.</p>
+        <p>I love sharing my knowledge, insights, and experiences from my journey in software development.</p>
+    </section>
+    
+    <section id="latest-posts">
+        <h2>My Latest Thoughts</h2>
+        
+        <ul>
+            {% include "blog/includes/post.html" %}
+        </ul>
+    </section>
+
+    <section id="about">
+        <h2>What I Do</h2>
+        <p>
+            I love programming, exploring new technologies, and sharing my knowledge with others through this blog.
+        </p>
+        <p>
+            My goal is to inspire and help fellow developers on their coding journeys.
+        </p>
+    </section>
+
+
+{% endblock %}
