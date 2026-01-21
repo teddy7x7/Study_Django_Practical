@@ -21,4 +21,9 @@ This project study more details of the mechanics of Django. Key topics include:
 4. Create folder `Templates` for specific App's templates and `Static` for specific App's static files in the App folder.
 5. Within `App/templates` and `App/templates`, create namespaced template folder and namespaced static folder. Thus, prevent file name collisions.
 
-####  
+####  Building prototype
+1. Divide each page into several main section, then further divide them into more concrete detail sections.
+2. Use lorem in the views.py before implement the database. DTL also provide lorem tag for the templates.
+3. Using the `include` tag in template A to include code snippet from template B. Template A get some value pass from views.py can also be accessible in the template B due to the function of `include`.
+4. The `add` filter can append things behind the hard coded part, ig. `{% static "blog/images/"|add:post.image %}`.
+5. For the dictionary in the DTL, we use dot notation rather than the square bracket, ig `post.image` rather than `post["image"]`.
