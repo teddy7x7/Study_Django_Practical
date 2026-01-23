@@ -48,6 +48,17 @@
     Book.objects.filter(Q(rating__gte=5) | Q(is_bestselling=True))
     # the',' represents 'and'
     Book.objects.filter(Q(rating__gte=5) | Q(is_bestselling=True), Q(author="J.K. Rowling"))
+
+    # Dealing with fail to find the entry
+    # #  implementation 1
+    try:
+        book = Book.objects.get(pk=id)
+    except:
+        raise django.http.Http404()
+
+    #  implementation 2
+    book = django.shortcuts.get_object_or_404(Book, id=id)
+
     ```
 
 * Update:
@@ -62,4 +73,55 @@
     ```
 
 * Delete:  
-    `instance.delete()`
+    First get the entry with `entry_instance = ClassName.objects.get()`, and then `entry_instance.delete()`
+
+3. Retrive the url by `django.urls.reverse` in the overrided function `get_absolute_url` by ourselves in the `models.py` file, so we can use another way to get the url in the template without the url tag.  
+**If we use the namespace technique and set the `app_name`, such as`app_name = "book_outlet"` in the `urls.py`, be aware of that no matter we are using the url tag or the reverse function, we have to use the `namespace:name` rather just `name`, such as the following**
+```django
+<!-- method 1 -->
+<!-- Get the url by using django's url tag -->
+<!-- <a href="{% url 'book_detail' id=book.id %}"> would get error that can't find the path-->
+<a href="{% url 'book_outlet:book_detail' id=book.id %}">
+```
+
+```python
+# method2
+# by the django.urls.reverse
+from django.urls import reverse
+
+# a function that would be called implicitly by django, we can overwrite it
+class Book(models.Model):
+    def get_absolute_url(self):
+        # must match the name and the slug we set in the urls.py
+        # return reverse("book_detail", args=[self.pk]) # this would get an error that can't find the path
+        return reverse("book_outlet:book_detail", args=[self.pk])
+```
+
+4. Convert `id` in the url into slug-like url by creating the slug field in the model class with `self.slug = models.slugField()` in the `models.py`. Override the `.save()`, and before calling and forwarding parameters to the overrided parent function, building the slug with `django.utils.text.slugify`.
+
+5. Change the urls with id into slug by:
+    * Modifing the get_absolute_url to reverse the url with slug, rather than id. Also, set the `db_index=True` to let the query more efficient.
+        ```python
+        class Book(models.Model):
+            # setting db_index=True
+            slug = models.SlugField(default="", null=False, db_index=True) 
+            def get_absolute_url(self):
+                return reverse("book_outlet:book_detail", args=[self.slug])
+        ```
+    * Modifing the dynamic fragement in the path function for the url in `urls.py`, from `<int:id>` to `<slug:slug>`
+    * Modifing the view function's signature from receving id to slug in the `views.py`.
+
+6. Aggregation and Ordering
+    * In Django, the built-in aggregation functions can return summary statistics.
+        ```python
+        # aggregate functions
+        from django.db.models import Avg, Max, Min
+
+        def index(request):
+            # add '-' to ger decending order
+            books = Book.objects.all().order_by("-rating")    
+            
+            # aggregate functions
+            num_books = books.count()
+            avg_rating = books.aggregate(Avg("rating"))
+        ```
