@@ -125,3 +125,41 @@ class Book(models.Model):
             num_books = books.count()
             avg_rating = books.aggregate(Avg("rating"))
         ```
+
+7. `admin/`
+    * username:123, email address: 123@123.com, password: 123
+    * Register App to the `admin.py` in the same folder.
+        ```python
+        from django.contrib import admin
+        from .models import Book
+        
+        admin.site.register(Book).
+        ```
+    
+    * To make admin site field can left blank when creating a new entry, we can set the parameter `blank=True` in the ...Field() functions in the `models.py`, such as:
+        ```python
+        slug = models.SlugField(blank=True)
+        ```
+        Or set `editable=False`, leave all work for assigning value in the coding way. This will let the field cant't be seen in the admin control pannel.
+    
+    * A much better way to control the admin area, such as how the fields are being displayed in the admin form, we can set a class named `AppNameAdmin` in the `admin.py`, such as:
+    ```python
+    class BookAdmin(admin.ModelAdmin):
+    # prepopulate the 'key' field base on the all the fields in the value tuple
+    prepopulated_fields = {"slug": ("title",)}
+    # seting filters can be seen in the admin form on the right hand side
+    list_filter = ("rating", "author")
+    # setting fields showed in the entries list
+    list_display = ("title", "author",)
+
+    admin.site.register(Book, BookAdmin)
+    ```
+
+8. Relationships
+    * One to one, one to many, many to many
+    * Foreign Key, a field point to another table's primary key, eg. in the class `Book`, we can set `author = models.ForeignKey(Author, on_delete=models.CASCADE)`, point to the table `Author` 's primary key.
+
+    * Filtering with the foreign key by the field name following with double under score and then the field name in the table corresponding to the foreign key. (and also can add more condition or so called **modifier** with more double under score with the condition, such as `__contain`)  
+    (eg.`Book.objects.filter(author__last_name__contains="ling")`)
+
+    * When we set the foreign key field, we can set parameter `related_name` for we can conversely search from the foreign key's corresponding data back to this table's data with that name, such as: `author = models.ForeignKey(Author,on_delete=models.CASCADE, null=True,related_name="books_set")` in the `models.py` and `jkr = Author.objects.get(first_name="J.K.")`
