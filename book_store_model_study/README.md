@@ -163,3 +163,35 @@ class Book(models.Model):
     (eg.`Book.objects.filter(author__last_name__contains="ling")`)
 
     * When we set the foreign key field, we can set parameter `related_name` for we can conversely search from the foreign key's corresponding data back to this table's data with that name, such as: `author = models.ForeignKey(Author,on_delete=models.CASCADE, null=True,related_name="books_set")` in the `models.py` and `jkr = Author.objects.get(first_name="J.K.")`
+
+    * For many-to-one relation, we use `models.ForeignKey()`, for the one-to-one relation, we use `models.OneToOneField()`, and for the many to many relation, we use `models.ManyToManyField()`
+
+    * Whenever we are setting the relations between the two table, we must `.save()` the value to be connected first, then the setting thus become legal.
+
+    * Setting the relation of one-to-one and one-to-many, we use the `=` operator, and for many-to-many, we use `.add()`.
+
+    * Nested `Meta` class within the model class:
+        1. What is class Meta?
+        In Django, the fields within the Address class (such as street and city) define the database structure. In contrast, class Meta is used to define the behavior and presentation of the model. It does not become a column in the database; instead, it tells Django how to handle the class itself.
+
+        2. The Role of verbose_name_plural
+        This is one of the most commonly used settings within class Meta.
+
+        Default Behavior: If you omit this line, the Django Admin interface will automatically convert your class name to lowercase and simply append an "s" to the end.
+
+        For example: Address would become "addresss" (which is grammatically incorrect in English).
+
+        Custom Effect: By setting verbose_name_plural, you can manually specify the plural form.
+
+        In this case, you are telling Django: "Whenever you need to display the plural name, please use 'Address Entries' instead of just adding an 's'."
+
+        ```python
+        class Address(models.Model):
+            street = models.CharField(max_length=80)
+            postal_code = models.CharField(max_length=5)
+            city = models.CharField(max_length=50)
+            class Meta:
+                verbose_name_plural = "Address Entries"
+        ```
+    
+        3. Circular Relations & Lazy Relations
