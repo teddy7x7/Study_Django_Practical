@@ -27,3 +27,6 @@ This project study more details of the mechanics of Django. Key topics include:
 3. Using the `include` tag in template A to include code snippet from template B. Template A get some value pass from views.py can also be accessible in the template B due to the function of `include`.
 4. The `add` filter can append things behind the hard coded part, ig. `{% static "blog/images/"|add:post.image %}`.
 5. For the dictionary in the DTL, we use dot notation rather than the square bracket, ig `post.image` rather than `post["image"]`.
+
+#### Adding Data and Models
+1. Defining data and model requirements > adding Models and relationships > adjustings Views and Templates

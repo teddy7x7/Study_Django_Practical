@@ -127,6 +127,7 @@ class Book(models.Model):
         ```
 
 7. `admin/`
+    * uv run python manage.py createsuperuser
     * username:123, email address: 123@123.com, password: 123
     * Register App to the `admin.py` in the same folder.
         ```python
@@ -142,15 +143,15 @@ class Book(models.Model):
         ```
         Or set `editable=False`, leave all work for assigning value in the coding way. This will let the field cant't be seen in the admin control pannel.
     
-    * A much better way to control the admin area, such as how the fields are being displayed in the admin form, we can set a class named `AppNameAdmin` in the `admin.py`, such as:
+    * A much better way to control the admin area, such as how the fields are being displayed in the admin form, we can set a class named `<AppName>Admin` in the `admin.py`, such as:
     ```python
     class BookAdmin(admin.ModelAdmin):
-    # prepopulate the 'key' field base on the all the fields in the value tuple
-    prepopulated_fields = {"slug": ("title",)}
-    # seting filters can be seen in the admin form on the right hand side
-    list_filter = ("rating", "author")
-    # setting fields showed in the entries list
-    list_display = ("title", "author",)
+        # prepopulate the 'key' field base on the all the fields in the value tuple
+        prepopulated_fields = {"slug": ("title",)}
+        # seting filters can be seen in the admin form on the right hand side
+        list_filter = ("rating", "author")
+        # setting fields showed in the entries list
+        list_display = ("title", "author",)
 
     admin.site.register(Book, BookAdmin)
     ```
