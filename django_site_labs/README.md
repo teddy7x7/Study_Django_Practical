@@ -34,4 +34,49 @@ This project study more details of the mechanics of Django. Key topics include:
 
 #### Forms
 * Creating and Handling Forms, Simplifying Form Management
+    1. Forms and different Http methods
+        * The html button tag has the default property `type=submit`, this would summit the data of the form which embrace the button tag by construct a new http request and send to the server that serves this form. Without futher configuration, this would be send to the main server page of that domain.
+
+        * By defualt, the request type is *GET*. For the defualt button being pressed, it would form a GET request and the entered data in the form is added to a so-called **query parameter** to the url which leads by a question mark in the url and coming with pairs of key-value pair bond by "=".
+
+        * But usually, we would alter the form to send a *POST* request to send the data to the server by the setting the form's method attribue
+            `<form method="POST">`
+        
+    2. The **CSRF** token/cookie for safety:
+        * **CSRF** stands for cross site request forgery
+        * For POST forms, you need to ensure:  
+            1. Your browser is accepting cookies.  
+            2. The view function passes a request to the template’s render method.  
+            3. In the template, there is a `{% csrf_token %}` template tag inside each POST form that targets an internal URL.  
+            4. If you are not using CsrfViewMiddleware, then you must use csrf_protect on any views that use the csrf_token template tag, as well as those that accept the POST data.  
+            5. The form has a valid CSRF token. After logging in in another browser tab or hitting the back button after a login, you may need to reload the page with the form, because the token is rotated after a login.
+        
+        * `{% csrf_token %}` template tag would add a dynamic generated token to the form (the token is generated on the server side's Django), it would send with the form datas within the POST request. For the server side can check whether the send back POST request is with the valid token or not.
+
+        In the django template :
+                ```html
+                <form method="POST">
+                    {% csrf_token %}
+                    <label for="username">username</label>
+                    <input id="username" name="username" type="text">
+                    <button>Send</button>
+                </form>
+                ```
+        In the browser, look at the Element, we can find that token `csrfmiddlewaretoken` :   
+        ```html  
+        <form method="POST">
+            <input type="hidden" name="csrfmiddlewaretoken" value="ZXLkBU9wve2Nrkfu2JgQHPQx31Lm3PZoLezYNdByroHgLp5It2Kt3wGxCZQbqGdH">
+            <label for="username">username</label>
+            <input id="username" name="username" type="text">
+            <button>Send</button>
+        </form>                    
+        ```
+            
+    3. Where does the POST request sent the data:
+        * The `action` property of the form html tag can set the path after the domain to which the request should be sent.
+        
+        * We can sent GET and POST request to the same url, and in the `views.py`, within the view function corresponding to the url, we can first check the request type and then perform distinct operation afterward.
+
+        * In a view function within the `views.py`, we can access the POSTed data from the request sent into the function by `request.POST`. This holds a dictionary. The key is the `name` property of a input tag in the form. By using the key, we can get the corresponding entered value, ig `request.POST["username"]`.
+
 * Exploring Class-based Views
