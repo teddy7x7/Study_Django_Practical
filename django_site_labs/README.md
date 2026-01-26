@@ -30,3 +30,8 @@ This project study more details of the mechanics of Django. Key topics include:
 
 #### Adding Data and Models
 1. Defining data and model requirements > adding Models and relationships > adjustings Views and Templates
+2. `latest_posts = Post.objects.all().order_by("-date")[:3]`, django would convert this into a sql commend rather than fetch all the data from the database.
+
+#### Forms
+* Creating and Handling Forms, Simplifying Form Management
+* Exploring Class-based Views
