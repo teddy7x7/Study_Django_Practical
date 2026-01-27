@@ -72,11 +72,75 @@ This project study more details of the mechanics of Django. Key topics include:
         </form>                    
         ```
             
-    3. Where does the POST request sent the data:
+    3. Where does the POST request sent the data to:
         * The `action` property of the form html tag can set the path after the domain to which the request should be sent.
         
         * We can sent GET and POST request to the same url, and in the `views.py`, within the view function corresponding to the url, we can first check the request type and then perform distinct operation afterward.
 
         * In a view function within the `views.py`, we can access the POSTed data from the request sent into the function by `request.POST`. This holds a dictionary. The key is the `name` property of a input tag in the form. By using the key, we can get the corresponding entered value, ig `request.POST["username"]`.
+    
+    4. Validation with the dango form  
+        To validate the content of the form sent from the the browser, django has built-in **django form class**
+        * Creat a `forms.py` file in the app folder and create the **django form class** in it.
+        * In the `forms.py` file, we define a class defines the shape of our form, the different inputs we want, and the corresponding validation rules for those inputs. This would allow us let Django automatically validate the input and render the template for us.
+
+        * Define the django form class just like the model classes.
+            ```python
+            # In the forms.py
+            from django import forms
+
+            class ReviewForm(forms.Form):
+                user_name = forms.CharField()
+            ```
+            ```html
+            <!--In the xxx.html-->
+            <form action="/" method="POST">
+                {% csrf_token %}
+                {{ form }}
+                <button type="submit">Send</button>
+            </form>
+            ```
+        * Validate in the `views.py`:
+            ```python
+            def review(request):
+                if request.method == 'POST':
+                    form = ReviewForm(request.POST)
+
+                    # return true if every thing is valid in the form
+                    if form.is_valid():
+                        print(form.cleaned_data)
+            ```
+
+        * Rerender the form with the not valid form (ie. `form.valid == false`) and its data which sent by the browser. We can do this by the following
+        ```python
+        if request.method == 'POST':
+            form = ReviewForm(request.POST)
+
+            if form.is_valid():
+                print(form.cleaned_data)
+                return HttpResponseRedirect("/thank-you")
+            # if is invalid, send this form generate which has been validate(invalid) to the render function, and let the template generate hints of invalid inputs and preserve other valid inputs.
+            
+        else:
+            # only create a new form when request.method == 'GET'
+            form = ReviewForm()
+        return render(request, "reviews/review.html", {
+            "form": form
+        })
+        ```
+
+        * If the input is invalid, django would return an unordered list which has property `class="errorlist"`.
+
+        * Customizing the form controls
+            * We can get different field of the form by the `form.<field>. ...` within the template
+                ```html
+                <div class="form-control {% if form.user_name.errors %}errors{% endif %}">
+                    {{ form.user_name.label_tag}}
+                    {{ form.user_name}}
+                    {{ form.user_name.errors}}
+                </div>
+                <button type="submit">Send</button>
+                ``` 
+
 
 * Exploring Class-based Views
