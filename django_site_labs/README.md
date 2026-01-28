@@ -255,4 +255,42 @@ This project study more details of the mechanics of Django. Key topics include:
             ]
         ```
     
-    3. There are many class-based View classes that we can inherit from, rather than just the View class.
+    3. There are many class-based View classes that we can inherit from, rather than just the View class.  
+        Such as :
+        * Template Views
+        * List and Detail Views
+        * Form View and Creat/Update/Delete Views
+        
+        1. Template Views
+            * A specific view class for return a template for a get request (render a template for the get request)
+            * Import by `from django.views.generic.base import TemplateView`
+            * Just set the specific attribute `template_name` in the inherit class, django would render the template implicitly.
+            ```python
+            # def thank_you(request):
+            #     return render(request, "reviews/thank_you.html")
+
+            # class ThankYouView(View):
+            #     def get(self, request):
+            #         return render(request, "reviews/thank_you.html")
+
+
+            # from django.views.generic.base import TemplateView
+            class ThankYouView(View):
+                template_name = "reviews/thank_you.html"
+            ```
+
+            * If there is some dynamic content which needed to pass to the template, we can override the function `get_context_data`.
+            ```python
+            class ThankYouView(TemplateView):
+                template_name = "reviews/thank_you.html"
+
+                def get_context_data(self, **kwargs):
+                    context = super().get_context_data(**kwargs)
+                    # corresponding to the tag in thank_you.html template
+                    context["message"] = "This Works"
+                    return context
+            ```
+
+
+        2. List and Detail Views
+        3. Form View and Creat/Update/Delete Views
