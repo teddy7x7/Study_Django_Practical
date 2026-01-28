@@ -141,6 +141,118 @@ This project study more details of the mechanics of Django. Key topics include:
                 </div>
                 <button type="submit">Send</button>
                 ``` 
+        
+        * Use the **for tag** in the template and loop through all the field in the form to create repeated structure of the form, thus we can increase the fields of a form with minor changes (no need to change the views.py, just styling in the template, and mainly changes are what fields are added to a form class in the forms.py):
+            ```html
+            {% for field in form %}
+                <div class="form-control {% if field.errors %}errors{% endif %}">
+                    {{ field.label_tag}}
+                    {{ field}}
+                    {{ field.errors}}
+                </div>
+            {% endfor %}
+            ```
+
+        * Storing form data to database
+            ```python
+                if request.method == 'POST':
+                    form = ReviewForm(request.POST)
+
+                    if form.is_valid():
+                        # print(form.cleaned_data)
+                        review = Review(
+                            user_name = form.cleaned_data['user_name'],
+                            review = form.cleaned_data['review_text'],
+                            rating = form.cleaned_data['rating']  
+                        )
+                        review.save()
+                        return HttpResponseRedirect("/thank-you")
+            ```
+
+
+* Modelforms
+    1. The `django.forms.ModelForm`:
+        * Connect a form(ModelForm) class to a model class and django would automatically take all the model fields and infer html inputs for those fields. This is realized by using a nested Meta class within the form class:
+
+        ```python
+        class ReviewForm(forms.ModelForm):
+            class Meta:
+                model = Review
+                # fields = '__all__'
+                fields = ['user_name', 'review_text', 'rating']
+                # exclude=['owner_comment']
+        ```
+    
+    2. Configuring the ModelForm:
+        * How to change defualt labels, error messages...etc. ? 
+          We can set different kinds of dictionary to modify the form, field name as the key and what we want as the value.
+          ```python
+          class ReviewForm(forms.ModelForm):
+            class Meta:
+                model = Review
+                fields = "__all__"
+                # fields = ['user_name', 'review_text', 'rating']
+                # exclude=['owner_comment']
+
+                labels = {
+                    "user_name": "Your Name",
+                    "review_text": "Your Feedback",
+                    "rating": "Your Rating"
+                }
+                error_messages = {
+                    "user_name": {
+                    "required": "Your name must not be empty!",
+                    "max_length": "Please enter a shorter name!"
+                    }
+                }
+          ```
+        
+    3. Saving data with a ModelForm
+        * For saving a Form class data to in the `views.py`, we construct a `Form` object with the submitting data, validating the object, and construct a `Model` object to save the validated data.
+            ```python
+            form = ReviewForm(request.POST)
+
+            if form.is_valid():
+                # print(form.cleaned_data)
+                review = Review(
+                    user_name = form.cleaned_data['user_name'],
+                    review_text = form.cleaned_data['review_text'],
+                    rating = form.cleaned_data['rating']  
+                )
+                review.save()
+            ```
+        * For saving a ModelForm (rather than a Form class), we can skip the `Model` object contruction and directly saves it to the database.
+            ```python
+            form = ReviewForm(request.POST)
+            
+            if form.is_valid():
+            form.save()
+            return HttpResponseRedirect("/thank-you")
+
+            ```
+        
+        * The `form.save()` can not only save a new entry of data, but also able to update an existing entry by using extra parameter `instance` which recieves a model object get from the database:
+            ```python
+            from .forms import ReviewForm
+            from .models import Review
+
+            def review(request):
+                if request.method == 'POST':
+                    existing_data = Review.objects.get(pk=1)
+                    form = ReviewForm(request.POST, instance=existing_data)
+            ```
 
 
 * Exploring Class-based Views
+    1. For the class-based views, it has functions corresponding to all the http methods named in lower-case, thus there's no need to go for a if branch to determine which kind of the http method does the request possess.
+
+    2. In the urls.py, use `.as_view()` to wire the url to that view class.
+        ```python
+            urlpatterns = [
+                # path("", views.review),
+                path("", views.ReviewView.as_view()),
+                path("thank-you", views.thank_you)
+            ]
+        ```
+    
+    3. There are many class-based View classes that we can inherit from, rather than just the View class.
