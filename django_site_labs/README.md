@@ -279,7 +279,7 @@ This project study more details of the mechanics of Django. Key topics include:
                 template_name = "reviews/thank_you.html"
             ```
 
-            * If there is some dynamic content which needed to pass to the template, we can override the function `get_context_data`.
+            * If there is some dynamic content which needed to pass to the template, we can override the function `get_context_data`. 
             ```python
             class ThankYouView(TemplateView):
                 template_name = "reviews/thank_you.html"
@@ -290,6 +290,8 @@ This project study more details of the mechanics of Django. Key topics include:
                     context["message"] = "This Works"
                     return context
             ```
+
+            We **must** call the `super().get_context_data(**kwargs)` inorder to get the **Named Groups**(in a dictionary form) defined in the path function in the `urls.py` first, and add extra key value pairs into the dictionary. Finally, return the dictionary to render the template stored in the `template_name` variable.
 
 
         2. List and Detail Views
