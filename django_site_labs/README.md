@@ -294,5 +294,76 @@ This project study more details of the mechanics of Django. Key topics include:
             We **must** call the `super().get_context_data(**kwargs)` inorder to get the **Named Groups**(in a dictionary form) defined in the path function in the `urls.py` first, and add extra key value pairs into the dictionary. Finally, return the dictionary to render the template stored in the `template_name` variable.
 
 
-        2. List and Detail Views
-        3. Form View and Creat/Update/Delete Views
+        2. ListView
+            * The process of responsing a GET request with rendering a list of entries fetched from the database is alway similar, so django provide `ListView` which can import by `from django.views.generic import ListView`. It would return the list of data implicitly, so there is no need for us to return anything. If we want to alter what is returned, there are still a bunch of functions we can override.
+            
+            ```python
+            class ReviewsListView(TemplateView):
+                template_name = "reviews/review_list.html"
+                # a specific variable point to the model class where to fetch the list of data
+                model = Review
+                # reset the name of returned list from default name object_list to what we want, ig. "reviews"
+                context_object_name = "reviews"
+
+                # def get_queryset(self):
+                #    base_query = super().get_queryset()
+                #    data = base_query.filter(rating__gt=4)
+                #    return data
+            ```
+
+        3. DetailView
+            * Whenever we want to return a template for a GET request with a single piece of data using the `DetailView` with other logics we want to add, might be a better option than the TemplateView.
+            It can be also imported from `django.views.generic`
+            * Django find the single piece of data by the url bind to the view function. The url needs to possess primary key `pk` in its named groups, such as `"reviews/<int:pk>"`
+            * The name of the item in the template would be the all lowercase of the model class name, or we can use `object` which is the default name of django used in the template.
+
+        4. Form View and Creat/Update/Delete Views
+            * Support GET request to return a form and POST request to handle the form submission from the browser, such as validation, possibly display the form again with errors hints, or save some data.
+
+            ```python
+            from django.views.generic.edit import FormView
+            class ReviewView(FormView):
+                # which form class should be used to render the form in the template
+                form_class = ReviewForm
+                template_name = "reviews/review.html"
+                # must provide
+                success_url = "/thank-you"
+            ```
+
+            * The FormView doesn't know what to do with a successful or validated submission. Maybe we just want to print it in the console, send as an email, write into a file, or save it into a database. Thus, we have override a function `` to designate what to do:
+            ```python
+            class ReviewView(FormView):
+                # which form class should be used to render the form in the template
+                form_class = ReviewForm
+                template_name = "reviews/review.html"
+                # must provide
+                success_url = "/thank-you"
+
+                def form_valid(self, form):
+                    # since we have designate which form class to deal with
+                    form.save()
+                    # must return parent's function to let django do it's work
+                    return super().form_valid(form)
+            ```
+        
+        5. CreatView
+            * A more specilized forView would save the form automatically. It would render, validate, show errors if needed, and save the data through the designated model if the submission is successful.
+            ```python
+            class ReviewView(CreateView):
+                # May no need a form class
+                # form_class = ReviewForm 
+                # just directly set the corresponding model to let django know how to create data, just like in the ListView
+                model = Review
+
+                # Or can set the form class here inorder to do more detail settings
+                form_class = ReviewForm
+                template_name = "reviews/review.html"
+                success_url = "/thank-you"
+            ```
+
+            * Corresponding to the CRUD, there are also **UpdateView**, **DeleteView** which work in the same way, ie. fetching data, show a form pre-populated with the data and update the data in the database.
+
+    
+    4. When to use which view
+        * The class views let us can write less code, but it just an option.
+        * Writing functionality explicitly also a valid personal preference.
