@@ -118,11 +118,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# Related to the deploy phase
-# This setting tells django under which url it shoule serve those static
-STATIC_URL = "static/"
+# URL prefix for static files (used in both development and production)
+STATIC_URL = "/static/"
 
-# specify folders that should be considered when django collects and load static files when it is going to move them to some static folder on the server, it created, in the deployment phase.
+# Additional locations Django will look for static files (besides app/static/)
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]

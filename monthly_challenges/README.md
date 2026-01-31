@@ -34,3 +34,18 @@ Simply put: **filters modify data, tags control flow or insert content.**
     1. Static Files : CSS, Javascript and images are static files, which are not change by server from time to time. (Unlike the template do change according to the dynamic logic inside of them.)
     2. Use `{% load static %}` and `<link rel="stylesheet" href="{% static "path relative to the 'static' folder"%}">` in the template file to load the static file. Django would automatically find the file in the static folders of the Apps installed.
     3. Global level static folder : Django would not search the folders in the root folder (ig. BASE_DIR/static) by default. Just like we register the global template folder's path (ig. BASE_DIR/templates) in the settings.py in the `TEMPLATE`'s `DIR` list, we also need to register the path of the global by setting a new list `STATICFILES_DIRS` on our own.
+    
+    4. Inside the `settings.py`
+    ```python
+    # URL prefix for static files (used in both development and production)
+    STATIC_URL = "/static/"
+
+    # Additional locations Django will look for static files (besides app/static/),
+    # used in both development and deployment (runserver and collectstatic)
+    STATICFILES_DIRS = [
+        BASE_DIR / "static"
+    ]
+
+    # Directory where collectstatic will collect static files for deployment
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    ```

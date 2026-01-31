@@ -367,3 +367,52 @@ This project study more details of the mechanics of Django. Key topics include:
     4. When to use which view
         * The class views let us can write less code, but it just an option.
         * Writing functionality explicitly also a valid personal preference.
+
+
+#### File Upload and File Storage
+* Main topics:
+    How does files uploads and file storage work?  
+    Adding file uploads
+    serving stored files
+    
+1. Html form tag's attribute `enctype` needs to set to specific value corresponding to upload file types. Usually we set `enctype="multipart/form-data"`whenever upload the data, such as pictures and files.
+
+2. In the view function, instead of using `request.POST`, we `request.Files` to get file types uploads. Inorder to access to that file, we need to set a name property inside the input html tag, such as `<input type="file" name="image"/>`, and thus we can use it as the key to access the file in the view function, such as `request.FILES['image']`. 
+
+3. Using Models for File Storage
+    * `models.FileField()` will not store the data in the database, since it's a bad practice to store files in the database. Because this bloats the database and make the database slower. Insteadly, files should be stored in hard drives. Thus, `models.FileField(upload_to="<path-of-the-file>")` stores data somewhere in the hard drive and only store the storage path of the file in the model into the database.
+
+    * How to set the `<path-of-the-file>` in `models.FileField()`  
+    In the `config/settings.py`, we can add a variable named **MEDIA_ROOT**, which tells django where our files should be stored in general and any folder we might point at in our Models.py would be a subfolder of this **MEDIA_ROOT**.
+
+    ```python
+    # Inside config/settings.py
+
+    # Absolute filesystem path to the directory that will hold user-uploaded files
+    # The actual physical location on the disk where files are stored.
+    MEDIA_ROOT = BASE_DIR / "uploads"
+
+    # URL that handles the media served from MEDIA_ROOT
+    # The public URL used to access those files via a browser.
+    MEDIA_URL = "/media/"
+    ```
+
+    * Using a model class to save the uploaded file just like the usual way we save an entry of data by `<modelinstance>.save()`, such as:
+    ```python
+    def post(self, request):
+        submitted_form = ProfileForm(request.POST, request.FILES)
+
+        if submitted_form.is_valid():
+            # store_file(request.FILES['image'])
+
+            profile = UserProfile(image=request.FILES['user_image'])
+            profile.save()
+            return HttpResponseRedirect("/profiles/")
+
+        return render(request, "profiles/create_profile.html", {
+            "form": submitted_form
+        })
+    ```
+
+
+    
