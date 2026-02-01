@@ -13,6 +13,17 @@ This project study more details of the mechanics of Django. Key topics include:
 
 2. Register Apps' `urls.py` in the urlpatterns list in the project's `config/urls.py` .
 3. Registering Apps' URLs in `App/urls.py` ,setting corresponding view functions and the name.
+4. Be aware of the order of URLs in `App/urls.py`, since **named groups** might resolve the url wrong due to they only check the type of the dynamic segement.
+```python
+# We should put "reviews/<int:pk>" after "reviews/favorite/", or it will intercept the request to the "reviews/favorite/"
+urlpatterns = [
+    path("", views.ReviewView.as_view()),
+    path("thank-you", views.ThankYouView.as_view()),
+    path("reviews", views.ReviewsListView.as_view()),
+    path("reviews/favorite/", views.AddFavoriteView.as_view()),
+    path("reviews/<int:pk>", views.SingleReviewView.as_view()),
+]
+```
 
 #### Basic Preparations for Templates and Static Files
 1. Create folder `Templates` for global templates and `Static` for global static files in the root folder. 
@@ -450,7 +461,7 @@ This project study more details of the mechanics of Django. Key topics include:
         ```
 
         2. Register this url in the `config/urls.py` by appending a `static()` to the urlpatterns list. This is a helper function which serves static files. It needs two arguments, first is the url used for exposing the files (the one registered with the variable `MEDIA_URL` in the `settings.py`), and the second one is the corresponding path on the file system that holds the actual file, ie `MEDIA_ROOT`.  
-        
+
         The example of using `+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`:
         ```python
         from django.conf.urls.static import static
@@ -463,8 +474,57 @@ This project study more details of the mechanics of Django. Key topics include:
         ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
         ```
 
+#### Sessions
+* Enabling & configuring sessions
+    * To enable the session functionality
+        1. In the `config/settings.py`, make sure in the `MIDDLEWARE` list the `middleware.SessionMiddleWare` is added. 
+        
+        2. Also make sure that `django.contrib.sessions` is registered in the `INSTALLED_APPS` list.
+    
+    * Configuring the session
+        * In the `config/settings.py`, we can set variable `SESSION_COOKIE_AGE`, ie. define how long a session cookie and therefore the session itself should survive. The unit of it is second. (The defualt is two weeks.)
 
+    * Save and Read the session data
+        * Within the view function, the `request` object has the `.session` property. We can utilize it to add new data or access to origin data in the session data in the way of using a dicitonary.
 
+        * Sessions and Serializability  
+        Under the hood, django takes whatever we store in a session and serializes it to JSON format. An object can't be directly serialized, since it not only contains data but also methods which can't be serialized, thus unable to be translated to JSON.
 
+        ```python
+        # wrong! we shall not to save a whole object to a session. We only save simple value in a session.
+        # request.session["favorite_review"] = fav_review
+        request.session["favorite_review"] = review_id
+        ```
+
+        * Read the saved session data  
+        In a template, data of the input tag of a form is returned in type of **string**, so when we are fetching it in the view function must be careful of it's type, such as we shall convert it back to integer before comparing it with another integer in the view function.
+
+        * Safely access session data  
+        Trying to access any session data can fail if it wasn't set before. Thus, if we load the site without any sessions set, a key hasn't been set in the session, it would fail with KeyError.  
+        So, the safer way is to use the **session's get method** to access data, if we are not sure that it has been set before or not.
+        ```python
+        def get_context_data(self, **kwargs):
+            context = super().get_context_data(**kwargs)
+            
+            # Get the current object being displayed
+            loaded_review = self.object
+            
+            # Use .get() to avoid a KeyError if "favorite_review" hasn't been set in the session
+            favorite_id = self.request.session.get("favorite_review")
+            
+            # Perform a type-safe comparison to check if this review is the favorite.
+            # We cast to int because session data is often stored as strings.
+            try:
+                if favorite_id:
+                    is_favorite = int(favorite_id) == loaded_review.id
+                else:
+                    is_favorite = False
+            except (ValueError, TypeError):
+                # Handle cases where favorite_id exists but isn't a valid integer
+                is_favorite = False
+
+            context["is_favorite"] = is_favorite
+            return context
+        ```
 
     
