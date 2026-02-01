@@ -361,8 +361,9 @@ This project study more details of the mechanics of Django. Key topics include:
                 success_url = "/thank-you"
             ```
 
-            * Corresponding to the CRUD, there are also **UpdateView**, **DeleteView** which work in the same way, ie. fetching data, show a form pre-populated with the data and update the data in the database.
+            * Corresponding to the CRUD, there are also **UpdateView**, **DeleteView** which work in the same way, ie. fetching data, show a form pre-populated with the data and update the data in the database.  
 
+            * CreateView also can be utilized to save file (validation and save the data)
     
     4. When to use which view
         * The class views let us can write less code, but it just an option.
@@ -413,6 +414,57 @@ This project study more details of the mechanics of Django. Key topics include:
             "form": submitted_form
         })
     ```
+
+    * CreateView also can be utilized to save file (validation and save the data)
+    ```python
+    class CreatProfileView(CreateView):
+    template_name = "profiles/creat_profile.html"
+    model = UserProfile
+    fields = "__all__"
+    success_url = "/profiles/"
+    ```
+
+4. Serving the uploaded files
+    * Inside the template, we can use `<list-item>.image.url` as the src of the img tag, inorder to get the image. This comes from the model's file or image field, which possess this built-in property `<field>.url`.  
+    (`<field>.path` can be used when we want a file system path, which is nice to have if we run some python code on the server.)
+    ```html
+    {% for profile in profiles %}
+      <li>
+        <img src="{{ profile.image.url }}">
+      </li>
+    {% endfor %}
+    ```
+
+    * Django by default lock down all folders and does not expose them to the browser for security reason. Which means they're not accessible from outside the server. To expose the uploaded files, there are two things to be done:
+        1. Set `MEDIA-URL` in the `config/settings.py`
+        ```python
+        # Inside config/settings.py
+
+        # Absolute filesystem path to the directory that will hold user-uploaded files
+        # The actual physical location on the disk where files are stored.
+        MEDIA_ROOT = BASE_DIR / "uploads"
+
+        # URL that handles the media served from MEDIA_ROOT
+        # The public URL used to access those files via a browser.
+        MEDIA_URL = "/user-media/"
+        ```
+
+        2. Register this url in the `config/urls.py` by appending a `static()` to the urlpatterns list. This is a helper function which serves static files. It needs two arguments, first is the url used for exposing the files (the one registered with the variable `MEDIA_URL` in the `settings.py`), and the second one is the corresponding path on the file system that holds the actual file, ie `MEDIA_ROOT`.  
+        
+        The example of using `+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`:
+        ```python
+        from django.conf.urls.static import static
+        from django.conf import settings
+
+        urlpatterns = [
+            path("admin/", admin.site.urls),
+            path("", include("reviews.urls")),
+            path("profiles/", include("profiles.urls")),
+        ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        ```
+
+
+
 
 
     
