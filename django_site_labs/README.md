@@ -25,6 +25,54 @@ urlpatterns = [
 ]
 ```
 
+5. Comparison of Media and Static settings
+    * Static
+    ```python
+    # settings.py
+
+    # 1. The URL prefix used to reference static files in HTML templates.
+    # Example: If set to '/static/', {% static 'css/style.css' %} becomes '/static/css/style.css'.
+    STATIC_URL = '/static/' 
+
+    # 2. Additional source directories where Django looks for static files.
+    # Use this for "global" assets (e.g., a site-wide logo or layout CSS) that aren't tied to a specific app.
+    # Django searches these folders in addition to the 'static/' folder inside each installed app.
+    STATICFILES_DIRS = [
+        BASE_DIR / "static",
+    ]
+
+    # 3. The absolute filesystem path where 'collectstatic' will gather all files for production.
+    # This folder is intended for your web server (like Nginx or Apache) to serve files from.
+    # WARNING: Do not put your source files here manually; they will be overwritten.
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    ```
+
+    * Media
+    ```python
+    # settings.py
+
+    # Absolute filesystem path to the directory that will hold user-uploaded files.
+    # This is where Django saves files uploaded through FileField or ImageField.
+    # This setting value is used in the development stage, we should set it to other value in the production phase.
+    MEDIA_ROOT = BASE_DIR / "media"
+
+    # URL that handles the media served from MEDIA_ROOT.
+    # It is the public URL prefix used in templates to access these files.
+    # Example: If a file is at 'uploads/profile.jpg', its URL will be '/media/profile.jpg'.
+    MEDIA_URL = "/media/"
+    ```
+
+    * Comparison: Static Files vs. Media Files
+
+        | Feature | Static Files | Media Files |
+        | --- | --- | --- |
+        | **Definition** | Files that compose the application (CSS, JS, Images). | Files uploaded by users during runtime. |
+        | **Origin** | Created by Developers. | Created by Users. |
+        | **Version Control** | Tracked by Git (source files). | **Ignored** by Git (user content). |
+        | **Deployment** | Collected via `collectstatic` to `STATIC_ROOT`. | Uploaded directly to `MEDIA_ROOT`. |
+        | **Serving (Prod)** | Typically served via Web Server (Nginx). | Often stored in Cloud Storage (AWS S3). |
+   
+
 #### Basic Preparations for Templates and Static Files
 1. Create folder `Templates` for global templates and `Static` for global static files in the root folder. 
 2. Register global templates folder's path in the TEMPLATES list in the project's `config/settings`.
@@ -447,7 +495,7 @@ urlpatterns = [
     ```
 
     * Django by default lock down all folders and does not expose them to the browser for security reason. Which means they're not accessible from outside the server. To expose the uploaded files, there are two things to be done:
-        1. Set `MEDIA-URL` in the `config/settings.py`
+        1. Set `MEDIA_URL` in the `config/settings.py`
         ```python
         # Inside config/settings.py
 
@@ -527,4 +575,9 @@ urlpatterns = [
             return context
         ```
 
-    
+#### Complete the Blog project
+* Adding a Comment Part of a Post
+    1. Adding a comment model
+    2. Adding a comment form
+
+* Read later
