@@ -576,8 +576,130 @@ urlpatterns = [
         ```
 
 #### Complete the Blog project
-* Adding a Comment Part of a Post
-    1. Adding a comment model
-    2. Adding a comment form
+* Session
+    * Use `request.session.get` try to get the field saved in the session, and use `if` statement to check whether the `get` method return with a not none value.
 
-* Read later
+    * Store or reset value in a session, just like using a dictionary, such as `request.session["stored_posts"] = stored_posts`.
+
+
+    ```python
+    class ReadLaterView(View):
+        def get(self, request):
+            stored_posts = request.session.get("stored_posts")
+
+            context = {}
+
+            if stored_posts is None or len(stored_posts) == 0:
+                context["posts"] = []
+                context["has_posts"] = False
+            else:
+            posts = Post.objects.filter(id__in=stored_posts)
+            context["posts"] = posts
+            context["has_posts"] = True
+
+            return render(request, "blog/stored_posts.html", context)
+
+
+        def post(self, request):
+            stored_posts = request.session.get("stored_posts")
+
+            if stored_posts is None:
+            stored_posts = []
+
+            post_id = int(request.POST["post_id"])
+
+            if post_id not in stored_posts:
+            stored_posts.append(post_id)
+            else:
+            stored_posts.remove(post_id)  
+            
+            request.session["stored_posts"] = stored_posts
+            
+            return HttpResponseRedirect("/")
+    ```
+
+* Deployment
+    * Deployment considerations and pitfalls
+        1. Choose Database: SQLite work but might be too slow or be erased(depends on hosting provider).
+        2. Adjust `settings.py`: Adjust config for chosen hosting provider, disable development-only settings.
+        3. Collect Static Files: Static files are **NOT** served automatically (just like user uploads, .css files) by Django.
+        4. Handle static & uploaded files serving
+        5. Choose a Host & deploy: Also dive into host-specific docs & examples
+    
+    1. Static files 
+        * Collect static files Before deployment by `uv run python manage.py collectstatic` 
+        * Options of serving the static files
+            1. Configure django to serve these files  
+                Okay for smaller sites, not performance-optimized though.  
+                Set the routing in the `config/urls.py` as following code using `static()` to do this:
+                ```python
+                urlpatterns = [
+                    path("admin/", admin.site.urls),
+                    path("", include("blog.urls")),  # Here, we set the blog app to be the root of the site, ie. link https://localhost:8000/ to it
+                ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
+                + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+                ```
+            2. Configure web server to serve these files and the django app  
+                Same server and device but seperate process, better for performance.
+            3. Use dedicated service/server for static and uploaded files  
+                Initial setup is more complex but offers best performance.
+        
+        * Before deployment, make sure the following:
+            1. The migration is done
+            2. superuser is created
+            3. all the static files are already collected
+            4. Within the `config/settings.py`
+                * Set `DEBUG` from `TRUE` to `FALSE`
+                
+            
+            5. The **Evnvironment Variables** settings
+                *  We want to set/pulgin these variables with concrete values into the `settings.py` file only after deployment. The **Evnvironment Variables**, allow us to use a placeholder in the file, and assign the value afterwards.  
+
+                This can be realized by using the python's package `dotenv` and python's built-in `os.getenv`.  
+
+                1. Install the the `dotenv` first with `uv` and re-generate the `requirements.txt` by `uv export --format requirements-txt --output-file requirements.txt`.  
+
+                2. In the `config/settings.py`, load the `.env` file with `load_dotenv()`, then get the value inside it with `os.getenv()`.
+                
+                ```python
+                import os
+                from pathlib import Path
+                from dotenv import load_dotenv
+                
+                BASE_DIR = Path(__file__).resolve().parent.parent
+
+                load_dotenv(os.path.join(BASE_DIR, '.env'))
+                
+                DEBUG = os.getenv('DEBUG') == 'True'
+                SECRET_KEY = os.getenv("SECRET_KEY")
+                ALLOWED_HOSTS = ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",")]
+                ```
+                
+                * `SECRET_KEY`  
+                    Generate the `SECRET_KEY` going to used in the deployment phase, save it into the `.env` file and add this file into the `.gitignore` before any `git add` and `git commit`. Never expose this key to the public, instead we create another file `.env.example` to let coworkers know what fields need to be configured.
+                
+                * The `ALLOW_HOST` list  
+                    We need to add all the hosts/domains, which basically should be able to send requests to this django application, ie. the hosting address of the server, which will host this application in the end.
+
+
+            5. Locking in Dependencies
+                * Lock in the core dependencies(python packages), which this project use. In this project, the two core packages are django and pillow. We also need to make sure that these dependencies are installed on the host we're going to deploy our application to. Check the docs. of the hosting provider. 
+                
+                * Most python hosting providers support `requirements.txt`, which we add to our project listing the dependencies needed. Using `pip` with the command `python -m pip freeze > requirements.txt`, we can generate this file. However, we are using `uv` rather than `pip` in this project. 
+
+                * While traditional `pip` uses `freeze` to capture currently installed packages, `uv export` is the modern standard. It generates a requirements file directly from our `uv.lock` file, ensuring that the exported dependencies are exactly what our project expects.  
+                To generate a basic requirements.txt for the project, run:
+                `uv export --format requirements-txt --output-file requirements.txt`
+
+                * With the `requirements.txt` created, it will be picked up by many hosting providers to install all the required dependencies, and the AWS service which we are going to use is no exception. It will also automatically look at this file when we deploy our application and install all these packages on the server, where we deploy the application to.
+            
+    
+    2. Database
+        * SQLite
+        * Postgre
+    
+    3. Web server
+        * asgi
+        * Wsgi
+    
+    4. 
