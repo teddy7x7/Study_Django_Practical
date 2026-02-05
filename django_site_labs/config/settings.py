@@ -27,11 +27,14 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = os.getenv("DEBUG", True)
+DEBUG = os.getenv("DEBUG", False)
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",")]
 
+# SECURITY
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "false") == "true"
+SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
+CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
 
 # Application definition
 

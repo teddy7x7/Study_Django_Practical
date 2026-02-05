@@ -681,8 +681,17 @@ urlpatterns = [
                 * The `ALLOW_HOST` list  
                     We need to add all the hosts/domains, which basically should be able to send requests to this django application, ie. the hosting address of the server, which will host this application in the end.
 
+            6. Security settings
+                * Change the admin urls in `urls.py` for safety.
+                * Add three more settings:
+                    ```python
+                    # SECURITY
+                    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "false") == "true"
+                    SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
+                    CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
+                    ```
 
-            5. Locking in Dependencies
+            7. Locking in Dependencies
                 * Lock in the core dependencies(python packages), which this project use. In this project, the two core packages are django and pillow. We also need to make sure that these dependencies are installed on the host we're going to deploy our application to. Check the docs. of the hosting provider. 
                 
                 * Most python hosting providers support `requirements.txt`, which we add to our project listing the dependencies needed. Using `pip` with the command `python -m pip freeze > requirements.txt`, we can generate this file. However, we are using `uv` rather than `pip` in this project. 
