@@ -21,7 +21,8 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # path("admin/", admin.site.urls),
+    path("top-secret-admin666/", admin.site.urls),
     # path("blog/", include("blog.urls")), # ie. include app/urls.py, and link https://localhost:8000/blog/ to it
     path("", include("blog.urls")),        # Here, we set the blog app to be the root of the site, ie. link https://localhost:8000/ to it
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
