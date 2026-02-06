@@ -619,6 +619,15 @@ urlpatterns = [
     ```
 
 * Deployment
+    * The overall structure:
+        * User (Browser) <--- HTTP ---> Nginx <--- uwsgi protocol ---> uWSGI <--- WSGI protocol ---> Python App (Django/Flask)
+
+        * Request Flow and Technical Stack:
+            1. External Layer: The Nginx server acts as the primary entry point, managing HTTP/HTTPS connections and serving static assets.
+            2. Communication Bridge: For dynamic requests, Nginx communicates with the uWSGI server using the high-performance binary uwsgi protocol.
+            3. Application Layer: uWSGI serves as the application container that implements the WSGI specification, ensuring seamless interaction with Python-based frameworks like Django or Flask.
+            4. Internal Logic: The Python App processes the data and returns the response back through the same pipeline.
+
     * Deployment considerations and pitfalls
         1. Choose Database: SQLite work but might be too slow or be erased(depends on hosting provider).
         2. Adjust `settings.py`: Adjust config for chosen hosting provider, disable development-only settings.
@@ -629,7 +638,7 @@ urlpatterns = [
     1. Static files 
         * Collect static files Before deployment by `uv run python manage.py collectstatic` 
         * Options of serving the static files
-            1. Configure django to serve these files  
+            1. Configure django to serve these files (by `config/urls.py`)
                 Okay for smaller sites, not performance-optimized though.  
                 Set the routing in the `config/urls.py` as following code using `static()` to do this:
                 ```python
@@ -641,6 +650,7 @@ urlpatterns = [
                 ```
             2. Configure web server to serve these files and the django app  
                 Same server and device but seperate process, better for performance.
+
             3. Use dedicated service/server for static and uploaded files  
                 Initial setup is more complex but offers best performance.
         
@@ -701,14 +711,76 @@ urlpatterns = [
                 `uv export --format requirements-txt --output-file requirements.txt`
 
                 * With the `requirements.txt` created, it will be picked up by many hosting providers to install all the required dependencies, and the AWS service which we are going to use is no exception. It will also automatically look at this file when we deploy our application and install all these packages on the server, where we deploy the application to.
+        
+        1. **Option1** : Configure django to serve static files, media files
+            * The first step is to do this, test the basic setting works fine, then we can alter this setting to become other two settings (Configure web server to serve these files and the django app on distinct process, or Use dedicated service/server for static and uploaded files)
+
+            * For the case of using **AWS Elastic Beanstalk**
+                * We need to create a `.ebexteionsions` folder for the Elastic Beanstalk service to find the configuration files and create a YAML file `django.config` inside it. The basic content of `django.config` we used:
+
+                ```YAML
+                option_settings:
+                    aws:elasticbeanstalk:container:python:
+                        WSGIPath: config.wsgi:application
+                ```
             
+            * After all the files has been created and checked, we shall compress most of the files in the root folder in to a zip file 
+                * **Don't include the .env file**, static folder(include staticfiles folder instead).
+                * For the package related files, include `requirements.txt`, `uv.lock`, `pyproject.toml`
+                * For the **AWS Elastic Beanstalk** settings, include `.ebexteionsions` folder.
+                * For the Django application, include all the apps folder, `config` folder, `manage.py`. If we use the SQLite, then include the `db.sqlite3`
+                * And include the `staticfiles` and `media` folder.
+        
+        2. **Option2** : Configure a web server to serve both static files, media files and django app
+            * Same server, but serve seperately. The request for static files and media files don't go to the django app any more.
+
+            * To do this rather than let django handle these files, we need to change the web server configuration by, for example in the web server hosting provider control pannel, such as **AWS Elastic Beanstalk**.
+
+            * In side the configuration pannel, we can find the **Proxy server**, such as Nginx.
+            * For the Nginx to serve the django app, We shall create another file named **static-files.config** inside `.ebexteionsions` folder. Elastic Beanstalk would pickup this file and change its interal Nginx configuration to serve these static and media files differently. Inside the file, we set `<url>:<ROOT_forlder_path_of_that_kind_of_files>` as the following :
+
+            ```YAML
+            option_settings:
+                aws:elasticbeanstalk:environment:proxy:staticfiles:
+                    /static: staticfiles
+                    /files: media
+            ```
+
+            * Since we set Nginx to serve these files, thus there is no need for django to deal with the request to these urls. So we can get rid of these in the `config/urls.py`, where we resolve the urls with `static()`, ie. remove or comment out the last two line of the following code:
+
+            ```python
+            urlpatterns = [
+                path("top-secret-admin666/", admin.site.urls),
+                path("", include("blog.urls")),
+            ] # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
+              # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+            ```
+
+        * Use dedicated service/server for static and media files seperate from django app
+
+        2. **Option3** :
     
     2. Database
         * SQLite
-        * Postgre
+        * Postgresql
+            * Need to install additional package inorder to work with django.
+            * For example, AWS RDS provides this data base. We need to change the database settings inside the `config/settings.py`. We shall create the superuser first and then set the following with the other values provide by AWS RDS.
+
+            ```python
+            DATABASES = {
+                "default": {
+                    "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.postgresql"),
+                    "NAME": os.getenv("DB_NAME"),
+                    "USER": os.getenv("DB_USER"),
+                    "PASSWORD": os.getenv("DB_PASSWORD"),
+                    "HOST": os.getenv("DB_HOST"),
+                    "PORT": os.getenv("DB_PORT", "5432"),
+                }
+            }
+            ```
+
+            * We also need to set the inbound rules to let the django apps run on the web server can legal access this database based on the firewall settings. For the AWS RDS, we can add the security group of the web server run the django app to the inbound rules to fulfill the requirements.
     
     3. Web server
         * asgi
         * Wsgi
-    
-    4. 
