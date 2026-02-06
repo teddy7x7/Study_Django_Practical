@@ -730,6 +730,10 @@ urlpatterns = [
                 * For the **AWS Elastic Beanstalk** settings, include `.ebexteionsions` folder.
                 * For the Django application, include all the apps folder, `config` folder, `manage.py`. If we use the SQLite, then include the `db.sqlite3`
                 * And include the `staticfiles` and `media` folder.
+
+            * We can find some CI/CD method to automates this process.
+
+            * Finally, we up load the zip file to the **AWS Elastic Beanstalk**. We can execute `git rev-parse --short HEAD` in the commandline in the root folder and  output the abbreviated commit hash (SHA-1 or SHA-256) of the current HEAD (the commit we are currently on). Then record this value in the version label field with the uploaded zip file on the AWS Elastic Beanstalk pannel.
         
         2. **Option2** : Configure a web server to serve both static files, media files and django app
             * Same server, but serve seperately. The request for static files and media files don't go to the django app any more.
