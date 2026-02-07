@@ -637,7 +637,7 @@ urlpatterns = [
     
     1. Static files 
         * Collect static files Before deployment by `uv run python manage.py collectstatic` 
-        * Options of serving the static files
+        * **Options of serving the static files**
             1. Configure django to serve these files (by `config/urls.py`)
                 Okay for smaller sites, not performance-optimized though.  
                 Set the routing in the `config/urls.py` as following code using `static()` to do this:
@@ -747,7 +747,7 @@ urlpatterns = [
             option_settings:
                 aws:elasticbeanstalk:environment:proxy:staticfiles:
                     /static: staticfiles
-                    /files: media
+                    /media: media
             ```
 
             * Since we set Nginx to serve these files, thus there is no need for django to deal with the request to these urls. So we can get rid of these in the `config/urls.py`, where we resolve the urls with `static()`, ie. remove or comment out the last two line of the following code:
@@ -762,7 +762,73 @@ urlpatterns = [
 
         * Use dedicated service/server for static and media files seperate from django app
 
-        2. **Option3** :
+        2. **Option3** : Use dedicated service/server for static and uploaded files
+            * We use a totally different service/server than the Elastic Beanstalk. We use **AWS S3** (simple storage service) to serve our staticfiles and media files.
+
+            * In this changing, we no longer store the static files, the uploads(media files) in the django project folders. Thus, when we collect the project static files into the `staticfiles` folder, **this folder shall not store in the project root folder anymore.** Instead, the collected static files and the media files shall be forwarded to the S3 server.
+
+            * Create a S3 bucket
+
+            * The IAM (Identity Access Management) service
+                * A service that allow us to grant other users or applications access to our aws account or to the services in this aws account.
+                    * create a new group -> attach policy (set up as little permissions as possible to restrict the kind of access django app has to this bucket in the end to only what is needed, for the security reason, or hackers might harm our aws account through the django app)
+                    -> Here we set AmazonS3FullAccess policy
+                    -> Add Django app as a programmtic user
+                    -> Generate **access key id** and  **secret access key** at the end, and set these value to the django app. Let django app can connect S3 through this **user**.
+
+                    * To let the django app can utilize the newly created aws user and access files on the S3, we shall:
+                        * Install packages:  
+                            `django-storages`: allow us to change the way that django handles local files
+                            `boto3`: the offical aws sdk for python which allows us to communicate with aws services programmatically from inside python applications.
+                        
+                        * Update packages in the `requirements.txt`.
+                        
+                        * Modify the `settings.py` to control how django stores and manages files
+                            * Register the `'storages'`(`django-storages`) into the `INSTALLED_APPS`, inorder to overwrite the default mechanism.
+
+                            * Add AWS specific settings, which would be picked up by the `boto3`, to inform django and python how to communicate with our aws account:
+                                ```python
+                                AWS_STORAGE_BUCKET_NAME = "<your-s3-bucketname>"
+                                AWS_S3_REGION_NAME = "<your-s3-bucket-region>"
+                                AWS_ACCESS_KEY_ID = "<your-aws-access-key-id>"
+                                AWS_SECRET_ACCESS_KEY = "<your-aws-secret-access-key>"
+
+                                AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+                                STATICFILES_FOLDER = "static"
+                                MEDIAFILES_FOLDER = "media"
+
+                                STATICFILES_STORAGE = "custom_storages.StaticFileStorage" # the file storage engine to use when collecting static files with the collectstatic management command. We swap the default setting with the S3boto storage, which move the collected static files to aws s3. 
+                                
+                                DEFAULT_FILE_STORAGE = "custom_storages.MediaFileStorage" # This field is for the media files in django settings
+                                ```
+                            **We shall save these value, aspecially the AWS_ACCESS_KEY_ID and the AWS_SECRET_ACCESS_KEY, as environment variables in the .env file, DON'T expose to others!!!**
+
+                            * **We shall not set DEFAULT_FILE_STORAGE as the same value to the STATICFILES_STORAGE, which means saving uploaded media file to the same position/folder to the static files. This would introduce the security problems, which the hackers might be able to alter or override the contents of our static files**
+
+                            * To seperate the static files and media files storage, we shall:
+                                * Create file `custom_storages.py` in the root folder of the django project. Create the class inherit from `S3Boto3Storage` to set the folders customly.
+                                    ```python
+                                    from django.conf import settings
+                                    from storages.backends.s3boto3 import S3Boto3Storage
+
+                                    class StaticFileStorage(S3Boto3Storage):
+                                        location = settings.STATICFILES_FOLDER
+
+                                    class MediaFileStorage(S3Boto3Storage):
+                                        location = settings.MEDIAFILES_FOLDER
+                                    ```
+                                
+                                * Add two keys `STATICFILES_FOLDER` and `MEDIAFILES_FOLDER` in the `settings.py`. These folders would be created in the S3 automatically.
+
+                                    ```python
+                                    STATICFILES_FOLDER = "static"   # collect and store static files in the subfolder "static" of the s3 bucket
+                                    MEDIAFILES_FOLDER = "media"     # save the uploaded files in the subfolder "media" of the s3 bucket
+                                    ```
+
+                            * We can test it with the collectstatic command and check if the files are uploaded in the s3 control pannel. Then locally run `python manage.py runserver --nostatic` to tell django not to serve the static files. Check the request responses header. In the html files, find the link tag and check does it match the `AWS_S3_CUSTOM_DOMAIN`.
+
+                        * upload the new zip file and redeploy the django app on the Elastic Beanstalk.
     
     2. Database
         * SQLite
